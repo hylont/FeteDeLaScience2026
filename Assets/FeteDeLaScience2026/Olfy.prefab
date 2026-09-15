@@ -1005,7 +1005,7 @@ GameObject:
   - component: {fileID: 4312892763032096709}
   - component: {fileID: 2688884562333289884}
   - component: {fileID: 3680247347503690614}
-  - component: {fileID: 1893421469772018354}
+  - component: {fileID: 4274783165715328673}
   m_Layer: 0
   m_Name: Olfy
   m_TagString: Untagged
@@ -1064,7 +1064,7 @@ MonoBehaviour:
   CHARACTERISTIC_UUID: 17d2bd76-92dc-11ee-b9d1-0242ac120002
   enableDebug: 1
   StatusText: {fileID: 6918769398448254483}
---- !u!114 &1893421469772018354
+--- !u!114 &4274783165715328673
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1073,9 +1073,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 8433767732789062076}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 49168edd73fb37f4db3beb1669253242, type: 3}
+  m_Script: {fileID: 11500000, guid: aab8f9dea3b74d74096c6534e0090e8c, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: '::'
+  m_EditorClassIdentifier: Assembly-CSharp::OlfyHandler
   _testScent:
     SlotIndex: 1
     Strength: 0.5
@@ -1092,7 +1092,7 @@ MonoBehaviour:
       draggable: 1
       expandable: 1
       multipleSelection: 1
-      isExpanded: 1
+      isExpanded: 0
       label:
         m_Text: Keys
         m_Image: {fileID: 0}
@@ -1108,17 +1108,17 @@ MonoBehaviour:
       elementNameOverride: 
       elementIcon: {fileID: 0}
     reqReferences: {fileID: 0}
-    isExpanded: 1
+    isExpanded: 0
     _keyValues: 000000000100000002000000030000000400000005000000
     _keys: 000000000100000002000000030000000400000005000000
     _values:
-    - {r: 0.4716981, g: 0.4716981, b: 0.4716981, a: 1}
+    - {r: 0.5, g: 0.5, b: 0.5, a: 1}
     - {r: 0, g: 1, b: 0, a: 1}
     - {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
     - {r: 1, g: 0, b: 0, a: 1}
     - {r: 1, g: 0, b: 1, a: 1}
     - {r: 0, g: 1, b: 1, a: 1}
-  _ignoreNotConnected: 1
+  _ignoreNotConnected: 0
   _slotsVisuals:
     reorderableList:
       canAdd: 1
@@ -1126,7 +1126,7 @@ MonoBehaviour:
       draggable: 1
       expandable: 1
       multipleSelection: 1
-      isExpanded: 1
+      isExpanded: 0
       label:
         m_Text: Keys
         m_Image: {fileID: 0}
@@ -1142,7 +1142,7 @@ MonoBehaviour:
       elementNameOverride: 
       elementIcon: {fileID: 0}
     reqReferences: {fileID: 0}
-    isExpanded: 1
+    isExpanded: 0
     _keyValues: 010000000200000003000000
     _keys: 010000000200000003000000
     _values:

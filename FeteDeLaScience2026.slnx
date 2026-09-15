@@ -1,8 +1,8 @@
 ﻿<Solution>
+  <Project Path="Assembly-CSharp.csproj" />
   <Project Path="AttributesSamples.csproj" />
   <Project Path="EditorAttributes.Editor.csproj" />
   <Project Path="EditorAttributes.csproj" />
-  <Project Path="Assembly-CSharp.csproj" />
   <Project Path="Assembly-CSharp-Editor.csproj" />
   <Project Path="RotaryHeart.csproj" />
   <Project Path="Assembly-CSharp-firstpass.csproj" />
