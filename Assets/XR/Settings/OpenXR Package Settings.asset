@@ -334,7 +334,9 @@ MonoBehaviour:
   m_Name: Standalone
   m_EditorClassIdentifier: Unity.XR.OpenXR::UnityEngine.XR.OpenXR.OpenXRSettings
   features:
+  - {fileID: -2558186396993347904}
   - {fileID: 1263315507211040699}
+  - {fileID: 8770894282236756810}
   - {fileID: -9002007389304807064}
   - {fileID: -5566764583026789001}
   - {fileID: 2611898251472051425}
@@ -357,6 +359,7 @@ MonoBehaviour:
   - {fileID: -2041812691475438944}
   - {fileID: 3178000417039903216}
   - {fileID: 8825352882383093417}
+  - {fileID: -3380589812999740203}
   - {fileID: -9213551938165282297}
   - {fileID: -2244515588020520202}
   - {fileID: -5858161515889257315}
@@ -422,6 +425,36 @@ MonoBehaviour:
   targetOpenXRApiVersion: 
   required: 0
   customRuntimeLoaderName: 
+--- !u!114 &-5540379325815375944
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19db6adf5be3433989f34a1788172b2c, type: 3}
+  m_Name: MockInteractionFeature Standalone
+  m_EditorClassIdentifier: Unity.XR.OpenXR.Tests::UnityEngine.XR.OpenXR.Tests.MockInteractionFeature
+  m_enabled: 0
+  <failedInitialization>k__BackingField: 0
+  nameUi: Mock Interaction Feature
+  version: 0.0.1
+  featureIdInternal: com.unity.openxr.feature.input.mockinteraction
+  openxrExtensionStrings: 
+  company: Unity
+  priority: -2147483648
+  targetOpenXRApiVersion: 
+  required: 0
+  customRuntimeLoaderName: 
+  <actionMapConfig>k__BackingField:
+    name: 
+    localizedName: 
+    actions: []
+    desiredInteractionProfile: 
+    manufacturer: 
+    serialNumber: 
 --- !u!114 &-5183698055946871171
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -444,6 +477,30 @@ MonoBehaviour:
   targetOpenXRApiVersion: 
   required: 0
   customRuntimeLoaderName: 
+--- !u!114 &-5031930144784300544
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a9cc40e7c09aec94ca78bbcd76fc3508, type: 3}
+  m_Name: DebugUtilsFeature Android
+  m_EditorClassIdentifier: Unity.XR.OpenXR::UnityEngine.XR.OpenXR.Features.DebugUtilsFeature
+  m_enabled: 0
+  nameUi: Debug Utils
+  version: 1.0.0
+  featureIdInternal: com.unity.openxr.feature.debugutils
+  openxrExtensionStrings: XR_EXT_debug_utils
+  company: Unity
+  priority: 0
+  targetOpenXRApiVersion: 
+  required: 0
+  customRuntimeLoaderName: 
+  m_MessageSeverity: 4369
+  m_MessageType: 15
 --- !u!114 &-4988973956405660247
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -642,6 +699,28 @@ MonoBehaviour:
   targetOpenXRApiVersion: 
   required: 0
   customRuntimeLoaderName: 
+--- !u!114 &-3380589812999740203
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8f7a7b4a7bf27d4d96b8eb673f5174e, type: 3}
+  m_Name: OculusTouchControllerProximityProfile Standalone
+  m_EditorClassIdentifier: Oculus.VR::Meta.XR.OculusTouchControllerProximityProfile
+  m_enabled: 1
+  nameUi: Oculus Touch Controller Proximity Interaction
+  version: 0.0.1
+  featureIdInternal: com.meta.openxr.feature.input.oculustouch.proximity
+  openxrExtensionStrings: XR_FB_touch_controller_proximity
+  company: Meta
+  priority: 0
+  targetOpenXRApiVersion: 1.1.45
+  required: 0
+  customRuntimeLoaderName: 
 --- !u!114 &-2925207487645238661
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -654,7 +733,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 01512f11fe5096443ad972feb69271f6, type: 3}
   m_Name: SpaceWarpFeature Android
   m_EditorClassIdentifier: Unity.XR.OpenXR::UnityEngine.XR.OpenXR.Features.SpaceWarpFeature
-  m_enabled: 0
+  m_enabled: 1
   nameUi: Application SpaceWarp
   version: 1.0.0
   featureIdInternal: com.unity.openxr.feature.spacewarp
@@ -687,6 +766,39 @@ MonoBehaviour:
   targetOpenXRApiVersion: 
   required: 0
   customRuntimeLoaderName: 
+--- !u!114 &-2558186396993347904
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ee92377a8e0c873458b71a94a80f3394, type: 3}
+  m_Name: ApiLayersFeature Standalone
+  m_EditorClassIdentifier: Unity.XR.OpenXR::UnityEngine.XR.OpenXR.Features.ApiLayersFeature
+  m_enabled: 1
+  nameUi: API Layers
+  version: 1.0.0
+  featureIdInternal: com.unity.openxr.feature.apilayers
+  openxrExtensionStrings: 
+  company: Unity
+  priority: 0
+  targetOpenXRApiVersion: 
+  required: 0
+  customRuntimeLoaderName: 
+  m_ApiLayers:
+    m_Collection:
+    - m_Json:
+        name: XR_APILAYER_METAX_operator
+        library_path: ./XrApiLayer_METAX_operator.dll
+        api_version: 1.1
+        implementation_version: 1
+        description: API layer that providing agentic interface for OpenXR
+      m_JsonFileName: XrApiLayer_METAX_operator.json
+      m_LibraryArchitecture: 1
+      m_IsEnabled: 1
 --- !u!114 &-2249434279684075644
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -773,8 +885,8 @@ MonoBehaviour:
     enabled: 1
   forceRemoveInternetPermission: 0
   m_symmetricProjection: 0
-  m_foveatedRenderingApi: 0
   systemSplashScreen: {fileID: 0}
+  enableSystemKeyboard: 0
   m_optimizeBufferDiscards: 1
   lateLatchingMode: 0
   lateLatchingDebug: 0
@@ -954,6 +1066,30 @@ MonoBehaviour:
   targetOpenXRApiVersion: 
   required: 0
   customRuntimeLoaderName: 
+--- !u!114 &1840021086879194977
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ee92377a8e0c873458b71a94a80f3394, type: 3}
+  m_Name: ApiLayersFeature Android
+  m_EditorClassIdentifier: Unity.XR.OpenXR::UnityEngine.XR.OpenXR.Features.ApiLayersFeature
+  m_enabled: 0
+  nameUi: API Layers
+  version: 1.0.0
+  featureIdInternal: com.unity.openxr.feature.apilayers
+  openxrExtensionStrings: 
+  company: Unity
+  priority: 0
+  targetOpenXRApiVersion: 
+  required: 0
+  customRuntimeLoaderName: 
+  m_ApiLayers:
+    m_Collection: []
 --- !u!114 &1926613036131783008
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -979,6 +1115,28 @@ MonoBehaviour:
   required: 0
   customRuntimeLoaderName: 
   enableSubsampledLayout: 0
+--- !u!114 &2010360436696233857
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f06e90513f934dc6891726a9f2a0444, type: 3}
+  m_Name: AndroidMouseInteractionProfile Android
+  m_EditorClassIdentifier: Unity.XR.OpenXR::UnityEngine.XR.OpenXR.Features.Interactions.AndroidMouseInteractionProfile
+  m_enabled: 0
+  nameUi: Android Mouse Interaction Profile
+  version: 0.0.1
+  featureIdInternal: com.unity.openxr.feature.input.androidmouse
+  openxrExtensionStrings: XR_ANDROID_mouse_interaction
+  company: Unity
+  priority: 0
+  targetOpenXRApiVersion: 
+  required: 0
+  customRuntimeLoaderName: 
 --- !u!114 &2069516349839937898
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1035,7 +1193,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: feeef8d85de8db242bdda70cc7ff5acd, type: 3}
   m_Name: OculusTouchControllerProfile Android
   m_EditorClassIdentifier: Unity.XR.OpenXR::UnityEngine.XR.OpenXR.Features.Interactions.OculusTouchControllerProfile
-  m_enabled: 0
+  m_enabled: 1
   nameUi: Oculus Touch Controller Profile
   version: 0.0.1
   featureIdInternal: com.unity.openxr.feature.input.oculustouch
@@ -1169,9 +1327,12 @@ MonoBehaviour:
   m_Name: Android
   m_EditorClassIdentifier: Unity.XR.OpenXR::UnityEngine.XR.OpenXR.OpenXRSettings
   features:
+  - {fileID: 2010360436696233857}
+  - {fileID: 1840021086879194977}
   - {fileID: -2925207487645238661}
   - {fileID: 6241744209809233429}
   - {fileID: -683735356913332443}
+  - {fileID: -5031930144784300544}
   - {fileID: -3616123354534277981}
   - {fileID: 6945744146987130069}
   - {fileID: 4720356416783628738}
@@ -1194,6 +1355,7 @@ MonoBehaviour:
   - {fileID: 7058614020388730598}
   - {fileID: 9042871404738038178}
   - {fileID: 2859949708654124664}
+  - {fileID: 8016656198878222673}
   - {fileID: -2803927893143981112}
   - {fileID: 824937417929720179}
   - {fileID: -7196001229887816810}
@@ -1284,6 +1446,36 @@ MonoBehaviour:
   customRuntimeLoaderName: 
   m_MinResolutionScalar: 0.05
   m_MaxResolutionScalar: 1
+--- !u!114 &6511241804196438353
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19db6adf5be3433989f34a1788172b2c, type: 3}
+  m_Name: MockInteractionFeature Android
+  m_EditorClassIdentifier: Unity.XR.OpenXR.Tests::UnityEngine.XR.OpenXR.Tests.MockInteractionFeature
+  m_enabled: 0
+  <failedInitialization>k__BackingField: 0
+  nameUi: Mock Interaction Feature
+  version: 0.0.1
+  featureIdInternal: com.unity.openxr.feature.input.mockinteraction
+  openxrExtensionStrings: 
+  company: Unity
+  priority: -2147483648
+  targetOpenXRApiVersion: 
+  required: 0
+  customRuntimeLoaderName: 
+  <actionMapConfig>k__BackingField:
+    name: 
+    localizedName: 
+    actions: []
+    desiredInteractionProfile: 
+    manufacturer: 
+    serialNumber: 
 --- !u!114 &6600637039028496309
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1448,6 +1640,28 @@ MonoBehaviour:
   targetOpenXRApiVersion: 
   required: 0
   customRuntimeLoaderName: 
+--- !u!114 &8016656198878222673
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8f7a7b4a7bf27d4d96b8eb673f5174e, type: 3}
+  m_Name: OculusTouchControllerProximityProfile Android
+  m_EditorClassIdentifier: Oculus.VR::Meta.XR.OculusTouchControllerProximityProfile
+  m_enabled: 1
+  nameUi: Oculus Touch Controller Proximity Interaction
+  version: 0.0.1
+  featureIdInternal: com.meta.openxr.feature.input.oculustouch.proximity
+  openxrExtensionStrings: XR_FB_touch_controller_proximity
+  company: Meta
+  priority: 0
+  targetOpenXRApiVersion: 1.1.45
+  required: 0
+  customRuntimeLoaderName: 
 --- !u!114 &8202825557652248992
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1471,6 +1685,30 @@ MonoBehaviour:
   targetOpenXRApiVersion: 
   required: 0
   customRuntimeLoaderName: 
+--- !u!114 &8770894282236756810
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a9cc40e7c09aec94ca78bbcd76fc3508, type: 3}
+  m_Name: DebugUtilsFeature Standalone
+  m_EditorClassIdentifier: Unity.XR.OpenXR::UnityEngine.XR.OpenXR.Features.DebugUtilsFeature
+  m_enabled: 0
+  nameUi: Debug Utils
+  version: 1.0.0
+  featureIdInternal: com.unity.openxr.feature.debugutils
+  openxrExtensionStrings: XR_EXT_debug_utils
+  company: Unity
+  priority: 0
+  targetOpenXRApiVersion: 
+  required: 0
+  customRuntimeLoaderName: 
+  m_MessageSeverity: 4369
+  m_MessageType: 15
 --- !u!114 &8825352882383093417
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -24,6 +24,7 @@ your own risk.
 
 using UnityEngine;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
 #if UNITY_2018_3_OR_NEWER
