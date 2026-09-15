@@ -1,10 +1,10 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 // The virtual cake piece. It does not use physics-based hand grabbing: since it has to stay
 // glued to a real piece of cake the participant is actually holding, the experimenter manually
-// confirms the grab by holding Ctrl, and the piece snaps to whichever tracked hand is closest
-// to it at that moment for as long as Ctrl stays held.
+// confirms the grab by holding the left controller's grip. While held (and until the piece has
+// reached the mouth), the piece is pinned to the participant's RIGHT hand pinch pose — always
+// the right hand, never whichever hand happens to be closest.
 public class CakePiece : MonoBehaviour
 {
     [Header("Visual")]
@@ -13,8 +13,7 @@ public class CakePiece : MonoBehaviour
     public bool IsBeingHeld { get; private set; }
 
     private MaterialPropertyBlock _propertyBlock;
-    private OVRHand _followingHand;
-    private bool _wasAttachHeld;
+    private bool _locked;
 
     private void Awake()
     {
@@ -23,24 +22,16 @@ public class CakePiece : MonoBehaviour
 
     private void Update()
     {
-        Keyboard kb = Keyboard.current;
-        bool attachHeld = kb != null && (kb.leftCtrlKey.isPressed || kb.rightCtrlKey.isPressed);
+        if (_locked) return;
 
-        if (attachHeld && !_wasAttachHeld)
-        {
-            _followingHand = FindClosestTrackedHand();
-            if (_followingHand != null)
-            {
-                IsBeingHeld = true;
-            }
-        }
+        bool attachHeld = OVRInput.Get(OVRInput.RawButton.LHandTrigger, OVRInput.Controller.LTouch);
+        if (!attachHeld) return;
 
-        if (attachHeld && _followingHand != null && _followingHand.IsTracked)
-        {
-            transform.SetPositionAndRotation(_followingHand.PointerPose.position, _followingHand.PointerPose.rotation);
-        }
+        OVRHand rightHand = ExperimentHands.Instance.Right;
+        if (rightHand == null || !rightHand.IsTracked) return;
 
-        _wasAttachHeld = attachHeld;
+        transform.SetPositionAndRotation(rightHand.PointerPose.position, rightHand.PointerPose.rotation);
+        IsBeingHeld = true;
     }
 
     public void SetColor(Color color)
@@ -60,8 +51,7 @@ public class CakePiece : MonoBehaviour
     public void ResetToServingPoint(Transform servingPoint)
     {
         IsBeingHeld = false;
-        _followingHand = null;
-        _wasAttachHeld = false;
+        _locked = false;
 
         if (servingPoint != null)
         {
@@ -69,26 +59,9 @@ public class CakePiece : MonoBehaviour
         }
     }
 
-    private OVRHand FindClosestTrackedHand()
+    // Called once the piece has reached the mouth: it stops tracking the hand and stays put.
+    public void StopFollowing()
     {
-        OVRHand left = ExperimentHands.Instance.Left;
-        OVRHand right = ExperimentHands.Instance.Right;
-
-        OVRHand best = null;
-        float bestDist = float.MaxValue;
-
-        if (left != null && left.IsTracked)
-        {
-            float d = Vector3.Distance(left.PointerPose.position, transform.position);
-            if (d < bestDist) { bestDist = d; best = left; }
-        }
-
-        if (right != null && right.IsTracked)
-        {
-            float d = Vector3.Distance(right.PointerPose.position, transform.position);
-            if (d < bestDist) { bestDist = d; best = right; }
-        }
-
-        return best;
+        _locked = true;
     }
 }
