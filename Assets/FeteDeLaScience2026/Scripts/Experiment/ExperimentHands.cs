@@ -11,6 +11,7 @@ public class ExperimentHands : MonoBehaviour
 
     public OVRHand Left => _left;
     public OVRHand Right => _right;
+    public Transform RightIndexTip, RightThumbTip;
 
     private void Awake()
     {

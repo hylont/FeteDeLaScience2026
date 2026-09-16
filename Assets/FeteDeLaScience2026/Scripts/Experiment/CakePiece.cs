@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 // The virtual cake piece. It does not use physics-based hand grabbing: since it has to stay
 // glued to a real piece of cake the participant is actually holding, the experimenter manually
@@ -20,17 +21,23 @@ public class CakePiece : MonoBehaviour
         _propertyBlock = new MaterialPropertyBlock();
     }
 
+    //public InputAction KeyboardBinding;
+
     private void Update()
     {
         if (_locked) return;
-
-        bool attachHeld = OVRInput.Get(OVRInput.RawButton.LHandTrigger, OVRInput.Controller.LTouch);
+        
+        bool attachHeld = OVRInput.Get(OVRInput.RawButton.LHandTrigger, OVRInput.Controller.LTouch)
+                || Keyboard.current.ctrlKey.isPressed;
+    
         if (!attachHeld) return;
 
         OVRHand rightHand = ExperimentHands.Instance.Right;
         if (rightHand == null || !rightHand.IsTracked) return;
 
-        transform.SetPositionAndRotation(rightHand.PointerPose.position, rightHand.PointerPose.rotation);
+        transform.position = (ExperimentHands.Instance.RightIndexTip.position + ExperimentHands.Instance.RightThumbTip.position) * 0.5f;
+        //transform.LookAt(ExperimentHands.Instance.RightIndexTip.position);
+        //transform.SetPositionAndRotation(rightHand.PointerPose.position, rightHand.PointerPose.rotation);
         IsBeingHeld = true;
     }
 

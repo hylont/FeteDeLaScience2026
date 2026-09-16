@@ -1,3 +1,4 @@
+using EditorAttributes;
 using System.Collections;
 using UnityEngine;
 
@@ -5,9 +6,9 @@ using UnityEngine;
 public class ScreenFader : MonoBehaviour
 {
     [SerializeField] private CanvasGroup _fadeCanvasGroup;
-    [SerializeField] private float _fadeDuration = 2f;
+    public float FadeDuration = 2f;
 
-    public void FadeToBlack()
+    private void Start()
     {
         if (_fadeCanvasGroup == null)
         {
@@ -15,21 +16,47 @@ public class ScreenFader : MonoBehaviour
             return;
         }
 
-        StartCoroutine(FadeCoroutine());
+        _fadeCanvasGroup.alpha = 1f;
+        FadeToHidden();
     }
 
-    private IEnumerator FadeCoroutine()
+    [Button("Fade To Hidden")]
+    public void FadeToHidden()
+    {
+        StartCoroutine(FadeCoroutine(_fadeCanvasGroup.alpha, 0f));
+    }
+
+    [Button("Fade in and out")]
+    public void FadeInAndOut()
+    {
+        StartCoroutine(FadeInAndOutCoroutine());
+    }
+
+    [Button("Fade To Black")]
+    public void FadeToBlack()
+    {
+        StartCoroutine(FadeCoroutine(_fadeCanvasGroup.alpha, 1f));
+    }
+
+
+    IEnumerator FadeInAndOutCoroutine()
+    {
+        FadeToBlack();
+        yield return new WaitForSeconds(FadeDuration);
+        FadeToHidden();
+    }
+
+    private IEnumerator FadeCoroutine(float start, float end)
     {
         float elapsed = 0f;
-        float startAlpha = _fadeCanvasGroup.alpha;
 
-        while (elapsed < _fadeDuration)
+        while (elapsed < FadeDuration)
         {
             elapsed += Time.deltaTime;
-            _fadeCanvasGroup.alpha = Mathf.Lerp(startAlpha, 1f, elapsed / _fadeDuration);
+            _fadeCanvasGroup.alpha = Mathf.Lerp(start, end, elapsed / FadeDuration);
             yield return null;
         }
 
-        _fadeCanvasGroup.alpha = 1f;
+        _fadeCanvasGroup.alpha = end;
     }
 }

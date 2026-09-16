@@ -1,3 +1,5 @@
+using EditorAttributes;
+using System.Collections;
 using UnityEngine;
 
 // Adjusts the XR rig's height and yaw so the real table lines up with the virtual one.
@@ -5,17 +7,37 @@ using UnityEngine;
 public class CalibrationRig : MonoBehaviour
 {
     [Header("Rig")]
-    [SerializeField] private Transform _xrOrigin;
     [SerializeField] private Transform _headTransform;
 
     [Header("Target")]
     [Tooltip("World-space height (Y) of the virtual table surface.")]
-    [SerializeField] private float _targetTableHeight = 0.75f;
+    [SerializeField] private float _baseTableHeight = 1f;
 
-    [Tooltip("Direction the participant should be facing once calibrated (world space).")]
-    [SerializeField] private Vector3 _targetForward = Vector3.forward;
+    [Header("Fader")]
+    [SerializeField] private ScreenFader _fader;
 
-    public bool TryCalibrate()
+    IEnumerator DelayCalibration()
+    {
+        yield return new WaitForSeconds(_fader.FadeDuration);
+        ForceCalibrate();
+        _fader.FadeToHidden();
+    }
+
+    public void TryCalibrate()
+    {
+        if(_fader != null)
+        {
+            _fader.FadeToBlack();
+            StartCoroutine(DelayCalibration());
+        }
+        else
+        {
+            ForceCalibrate();
+        }
+    }
+
+    [Button("Force Calibrate")]
+    void ForceCalibrate()
     {
         OVRHand left = ExperimentHands.Instance.Left;
         OVRHand right = ExperimentHands.Instance.Right;
@@ -23,30 +45,19 @@ public class CalibrationRig : MonoBehaviour
         if (left == null || right == null || !left.IsTracked || !right.IsTracked)
         {
             LLogger.W("Calibration aborted: both hands must be tracked.");
-            return false;
+            return;
         }
 
-        Vector3 leftPos = left.PointerPose.position;
-        Vector3 rightPos = right.PointerPose.position;
+        Vector3 RHandPos = right.PointerPose.position;
+        Vector3 LHandPos = left.PointerPose.position;
+        transform.position = new Vector3((RHandPos.x + LHandPos.x) * 0.5f,
+            -_baseTableHeight + (RHandPos.y + LHandPos.y) * 0.5f,
+            (RHandPos.z + LHandPos.z) * 0.5f);
 
-        Vector3 handAxis = rightPos - leftPos;
-        handAxis.y = 0f;
-        if (handAxis.sqrMagnitude < 0.0001f)
-        {
-            LLogger.W("Calibration aborted: hands are too close together to read an orientation.");
-            return false;
-        }
-        handAxis.Normalize();
+        Quaternion oldRot = transform.rotation;
+        transform.LookAt(_headTransform.position);
+        transform.rotation = Quaternion.Euler(0f, transform.rotation.eulerAngles.y, 0f);
 
-        float handHeight = (leftPos.y + rightPos.y) * 0.5f;
-        float deltaHeight = _targetTableHeight - handHeight;
-        _xrOrigin.position += Vector3.up * deltaHeight;
-
-        Vector3 targetRight = Vector3.Cross(Vector3.up, _targetForward.normalized);
-        float deltaYaw = Vector3.SignedAngle(handAxis, targetRight, Vector3.up);
-        _xrOrigin.RotateAround(_headTransform.position, Vector3.up, deltaYaw);
-
-        LLogger.L($"Calibration applied — deltaHeight={deltaHeight:F3}m, deltaYaw={deltaYaw:F1} deg");
-        return true;
+        LLogger.W($"Calibration complete. New height = - {_baseTableHeight} + ({RHandPos.y} + {LHandPos.y}) * 0.5f) = {transform.position.y}\n New rotation: {transform.rotation.eulerAngles.ToString()}");
     }
 }

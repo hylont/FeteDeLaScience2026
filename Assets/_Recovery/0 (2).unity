@@ -33728,7 +33728,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CalibrationRig
   _headTransform: {fileID: 715160201}
   _baseTableHeight: 1
-  _fader: {fileID: 1090950493}
+  _fader: {fileID: 0}
 --- !u!1001 &536322330
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -44316,8 +44316,7 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 1090950491}
+  m_Children: []
   m_Father: {fileID: 425219954}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!20 &715160202
@@ -66773,7 +66772,6 @@ GameObject:
   - component: {fileID: 1090950490}
   - component: {fileID: 1090950492}
   - component: {fileID: 1090950493}
-  - component: {fileID: 1090950494}
   m_Layer: 5
   m_Name: BlackFade
   m_TagString: Untagged
@@ -66790,7 +66788,7 @@ Canvas:
   m_GameObject: {fileID: 1090950487}
   m_Enabled: 1
   serializedVersion: 3
-  m_RenderMode: 2
+  m_RenderMode: 0
   m_Camera: {fileID: 0}
   m_PlaneDistance: 100
   m_PixelPerfect: 0
@@ -66812,18 +66810,18 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1090950487}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0.15}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 0, y: 0, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 795780387}
-  m_Father: {fileID: 715160201}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 2, y: 2}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0, y: 0}
 --- !u!225 &1090950492
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -66849,23 +66847,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ScreenFader
   _fadeCanvasGroup: {fileID: 1090950492}
-  FadeDuration: 1
---- !u!114 &1090950494
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1090950487}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: df8e1d778abf442e4bec449c360e9e1c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Oculus.VR::OVRScreenFade
-  fadeTime: 5
-  fadeColor: {r: 0.01, g: 0.01, b: 0.01, a: 1}
-  fadeOnStart: 1
-  renderQueue: 5000
+  FadeDuration: 2
 --- !u!1001 &1091277983
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -133578,11 +133560,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 728513e1fc5ec124fbf777c5974c369f, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.084
+      value: -0.146
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 728513e1fc5ec124fbf777c5974c369f, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.151
+      value: -0.106
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 728513e1fc5ec124fbf777c5974c369f, type: 3}
       propertyPath: m_LocalPosition.z
@@ -133639,10 +133621,6 @@ PrefabInstance:
     - target: {fileID: 5866666021909216657, guid: 728513e1fc5ec124fbf777c5974c369f, type: 3}
       propertyPath: m_WarningMessage
       value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 5866666021909216657, guid: 728513e1fc5ec124fbf777c5974c369f, type: 3}
-      propertyPath: m_ApplyRootMotion
-      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -135546,6 +135524,7 @@ SceneRoots:
   - {fileID: 1886514301}
   - {fileID: 1500521558}
   - {fileID: 1189606530}
+  - {fileID: 1090950491}
   - {fileID: 1854052184}
   - {fileID: 1885431658}
   - {fileID: 998711720}

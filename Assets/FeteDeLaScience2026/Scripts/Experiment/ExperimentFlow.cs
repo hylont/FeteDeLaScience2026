@@ -1,6 +1,8 @@
 using EditorAttributes;
+using System.Collections;
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 // Drives the full trial from calibration to the final fade to black:
 //   1) Left controller X calibrates the rig once both hands are seen resting on the table.
@@ -32,6 +34,7 @@ public class ExperimentFlow : MonoBehaviour
     [SerializeField] private CakePiece _cakePiece;
     [SerializeField] private Transform _mouthReference;
     [SerializeField] private float _mouthProximityThreshold = 0.12f;
+    [SerializeField] private float _cakePlacementDelay = 1f;
 
     [Header("Scent")]
     [Tooltip("Component implementing IScentDiffuser, e.g. the Olfy prefab's OlfyHandler.")]
@@ -82,9 +85,10 @@ public class ExperimentFlow : MonoBehaviour
 
     private void Update()
     {
-        bool confirmPressed = OVRInput.GetDown(OVRInput.RawButton.X, OVRInput.Controller.LTouch);
+        bool confirmPressed = OVRInput.GetDown(OVRInput.RawButton.X, OVRInput.Controller.LTouch)
+            || Keyboard.current.enterKey.wasPressedThisFrame;
 
-        switch (_state)
+            switch (_state)
         {
             case EState.WaitingCalibration:
                 if (confirmPressed) TryCalibrate();
@@ -101,11 +105,21 @@ public class ExperimentFlow : MonoBehaviour
 
     private void TryCalibrate()
     {
-        if(!_disableCalibration)
+        if(_disableCalibration)
         {
-           _calibrationRig.TryCalibrate();
+            BeginTrial(TrialData.GenerateCoherent());
         }
-        BeginTrial(TrialData.GenerateCoherent());
+        else
+        {
+            _calibrationRig.TryCalibrate();
+            StartCoroutine(StartTrial_Coroutine(TrialData.GenerateCoherent()));
+        }
+    }
+
+    IEnumerator StartTrial_Coroutine(TrialData trial)
+    {
+        if(_screenFader != null) yield return new WaitForSeconds(_screenFader.FadeDuration);
+        BeginTrial(trial);
     }
 
     private void BeginTrial(TrialData trial)
@@ -114,16 +128,23 @@ public class ExperimentFlow : MonoBehaviour
         _trialIndex++;
         _scentDiffusedThisTrial = false;
 
+        if (_chefAnimator != null) _chefAnimator.SetTrigger(PlacingTrigger);
+
         FlavorDefinition colorDef = GetDefinition(trial.ColorFlavor);
-        _cakePiece.gameObject.SetActive(true);
         _cakePiece.ResetToServingPoint(_cakeServingPoint);
         _cakePiece.SetColor(colorDef.Color);
 
-        if (_chefAnimator != null) _chefAnimator.SetTrigger(PlacingTrigger);
+        StartCoroutine(EnableCakePiece_Coroutine());
 
         _state = EState.TrialInProgress;
 
         LLogger.L($"Trial {_trialIndex}/{TotalTrials} start — condition={trial.Condition}, color={trial.ColorFlavor}, scent={trial.ScentFlavor}");
+    }
+
+    IEnumerator EnableCakePiece_Coroutine()
+    {
+        yield return new WaitForSeconds(_cakePlacementDelay);
+        _cakePiece.gameObject.SetActive(true);
     }
 
     private void UpdateTrial()
@@ -141,6 +162,7 @@ public class ExperimentFlow : MonoBehaviour
     {
         _scentDiffusedThisTrial = true;
         _cakePiece.StopFollowing();
+        _cakePiece.gameObject.SetActive(false);
 
         FlavorDefinition scentDef = GetDefinition(_currentTrial.ScentFlavor);
         var parameters = new ScentDiffusionParameters(scentDef.ScentSlot, _scentStrength, _scentDuration);
