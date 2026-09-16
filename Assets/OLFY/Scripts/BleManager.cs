@@ -202,7 +202,7 @@ public class BleManager : MonoBehaviour
                         BluetoothLEHardwareInterface.RequestMtu(_deviceAddress, 185, (address, newMTU) =>
                         {
                             StatusMessage = "MTU set to " + newMTU.ToString();
-                            StatusMessage = "Prêt";
+                            StatusMessage = "Prï¿½t";
                             // SetState(States.Subscribe, 0.1f);
                         });
                         break;
@@ -277,7 +277,7 @@ public class BleManager : MonoBehaviour
     {
         Debug.Log("Diffuse : " + channel);
 
-        string str = "{ \"action\":\"diffuse\",\"duration\":" + duration + ",\"channel\":" + channel + ",\"intensity\":" + intensity + ",\"freq\":" + freq + ",\"booster\":" + booster + "}";
+        string str = "{ \"action\":\"diffuse\",\"duration\":" + duration + ",\"channel\":" + channel + ",\"intensity\":" + intensity + ",\"freq\":" + freq + ",\"booster\":" + (booster ? "true" : "false") + "}";
         SendString(str);
     }
     //public void GetBatt()

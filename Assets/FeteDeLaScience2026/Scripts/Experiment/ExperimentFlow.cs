@@ -20,6 +20,16 @@ public class ExperimentFlow : MonoBehaviour
         Ended
     }
 
+
+    [SerializeField]
+    ScentDiffusionParameters _testScent = new(1, .5f, 3000);
+
+    [Button("Diffuse test")]
+    void DiffuseTest()
+    {
+        if(_scentDiffuser != null) _scentDiffuser.RequestDiffusion(_testScent);
+    }
+
     private const int TotalTrials = 2;
 
     [Header("Calibration")]
@@ -39,8 +49,8 @@ public class ExperimentFlow : MonoBehaviour
     [Header("Scent")]
     [Tooltip("Component implementing IScentDiffuser, e.g. the Olfy prefab's OlfyHandler.")]
     [SerializeField] private MonoBehaviour _scentDiffuserBehaviour;
-    [SerializeField] private float _scentStrength = 0.7f;
-    [SerializeField] private float _scentDuration = 3f;
+    [SerializeField] [Range(0f, 1f)] private float _scentStrength = 0.7f;
+    [SerializeField] [Range(1000, 10000)] private int _scentDuration = 3000;
 
     [Header("Flavors")]
     [SerializeField]
@@ -89,7 +99,9 @@ public class ExperimentFlow : MonoBehaviour
             || OVRInput.GetDown(OVRInput.RawButton.A, OVRInput.Controller.RTouch)
             || Keyboard.current.enterKey.wasPressedThisFrame;
 
-            switch (_state)
+        if(OVRInput.GetDown(OVRInput.RawButton.B, OVRInput.Controller.RTouch)) DiffuseTest();
+
+        switch (_state)
         {
             case EState.WaitingCalibration:
                 if (confirmPressed) TryCalibrate();

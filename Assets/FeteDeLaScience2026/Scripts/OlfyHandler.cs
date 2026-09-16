@@ -10,16 +10,6 @@ using UnityEngine.UI;
 
 public partial class OlfyHandler : MonoBehaviour, IScentDiffuser
 {
-
-    [SerializeField]
-    ScentDiffusionParameters _testScent = new ScentDiffusionParameters(1, .5f, 3f);
-
-    [Button("Diffuse test")]
-    void DiffuseTest()
-    {
-        RequestDiffusion(_testScent);
-    }
-
     [Header("Dependencies")]
     [SerializeField] private OlfyManager _olfyManager;
     [SerializeField] private BleManager _bluetoothManager;
@@ -84,7 +74,12 @@ public partial class OlfyHandler : MonoBehaviour, IScentDiffuser
         {
             HandleDiffusion(parameters);
 
-            BleManager.Instance.Diffuse((int)parameters.Duration, parameters.SlotIndex+"", (int)(parameters.Strength*100), parameters.Frequency, false);
+            _olfyManager.SendSmellToOlfy(parameters.Duration, parameters.SlotIndex + "", (int)(parameters.Strength * 100), parameters.Frequency, false);
+            
+            string output = "Diffusion request sent to Olfy at "+DateTime.Now.ToString("HH:mm:ss")+"\nSlot " + parameters.SlotIndex + ", Strength " + (int)(parameters.Strength * 100) + ", Duration " + parameters.Duration + ", Frequency " + parameters.Frequency;
+            if(_debugText != null) _debugText.text = output;
+            LLogger.L(output);
+
             return true;
         }
         else

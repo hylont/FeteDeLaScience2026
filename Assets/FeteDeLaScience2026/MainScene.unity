@@ -2207,8 +2207,8 @@ MonoBehaviour:
   _mouthProximityThreshold: 0.12
   _cakePlacementDelay: 1
   _scentDiffuserBehaviour: {fileID: 2100078945}
-  _scentStrength: 0.7
-  _scentDuration: 3
+  _scentStrength: 0.9
+  _scentDuration: 5579
   _flavors:
   - Flavor: 0
     Color: {r: 0.36, g: 0.2, b: 0.09, a: 1}
@@ -3346,6 +3346,30 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
+--- !u!1 &1964005195 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: -1781356600409242780, guid: 728513e1fc5ec124fbf777c5974c369f, type: 3}
+  m_PrefabInstance: {fileID: 2128124688}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1964005197
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1964005195}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 29cf45378c94f7d419e3a9b7bbc21f3c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  _maxDistance: 2
+  Target: {fileID: 0}
+  m_getCameraIfNoTarget: 1
+  m_lockX: 0
+  m_lockY: 0
+  m_lockZ: 1
+  m_speed: 1
 --- !u!1 &1964778896
 GameObject:
   m_ObjectHideFlags: 0
@@ -3697,10 +3721,41 @@ PrefabInstance:
       propertyPath: m_ApplyRootMotion
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6515712193588681746, guid: 728513e1fc5ec124fbf777c5974c369f, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.99904835
+      objectReference: {fileID: 0}
+    - target: {fileID: 6515712193588681746, guid: 728513e1fc5ec124fbf777c5974c369f, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0.027660606
+      objectReference: {fileID: 0}
+    - target: {fileID: 6515712193588681746, guid: 728513e1fc5ec124fbf777c5974c369f, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0.033710662
+      objectReference: {fileID: 0}
+    - target: {fileID: 6515712193588681746, guid: 728513e1fc5ec124fbf777c5974c369f, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0.0009333455
+      objectReference: {fileID: 0}
+    - target: {fileID: 6515712193588681746, guid: 728513e1fc5ec124fbf777c5974c369f, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 3.165
+      objectReference: {fileID: 0}
+    - target: {fileID: 6515712193588681746, guid: 728513e1fc5ec124fbf777c5974c369f, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 3.871
+      objectReference: {fileID: 0}
+    - target: {fileID: 6515712193588681746, guid: 728513e1fc5ec124fbf777c5974c369f, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0.214
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: -1781356600409242780, guid: 728513e1fc5ec124fbf777c5974c369f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1964005197}
   m_SourcePrefab: {fileID: 100100000, guid: 728513e1fc5ec124fbf777c5974c369f, type: 3}
 --- !u!4 &2131338278 stripped
 Transform:
