@@ -28,6 +28,7 @@ public class CakePiece : MonoBehaviour
         if (_locked) return;
         
         bool attachHeld = OVRInput.Get(OVRInput.RawButton.LHandTrigger, OVRInput.Controller.LTouch)
+                || OVRInput.Get(OVRInput.RawButton.RHandTrigger, OVRInput.Controller.RTouch)
                 || Keyboard.current.ctrlKey.isPressed;
     
         if (!attachHeld) return;

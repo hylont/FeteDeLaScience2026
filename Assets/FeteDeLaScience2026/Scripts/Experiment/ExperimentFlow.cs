@@ -86,6 +86,7 @@ public class ExperimentFlow : MonoBehaviour
     private void Update()
     {
         bool confirmPressed = OVRInput.GetDown(OVRInput.RawButton.X, OVRInput.Controller.LTouch)
+            || OVRInput.GetDown(OVRInput.RawButton.A, OVRInput.Controller.RTouch)
             || Keyboard.current.enterKey.wasPressedThisFrame;
 
             switch (_state)
