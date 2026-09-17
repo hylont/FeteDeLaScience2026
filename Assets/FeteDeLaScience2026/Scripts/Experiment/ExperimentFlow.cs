@@ -118,8 +118,8 @@ public class ExperimentFlow : MonoBehaviour
         if(_allowTesting && 
             OVRInput.GetDown(OVRInput.RawButton.B, OVRInput.Controller.RTouch)) DiffuseTest();
 
-        if(OVRInput.GetDown(OVRInput.RawButton.RHandTrigger, OVRInput.Controller.RTouch)
-            || OVRInput.GetDown(OVRInput.RawButton.LHandTrigger, OVRInput.Controller.LTouch))
+        if(OVRInput.Get(OVRInput.RawButton.RIndexTrigger, OVRInput.Controller.RTouch)
+            || OVRInput.Get(OVRInput.RawButton.LIndexTrigger, OVRInput.Controller.LTouch))
         {
             _resetButtonHeld += Time.deltaTime;
 
@@ -128,6 +128,10 @@ public class ExperimentFlow : MonoBehaviour
                 LLogger.L("Resetting experiment.");
                 SceneManager.LoadScene(SceneManager.GetActiveScene().name);
             }
+        }
+        else
+        {
+            _resetButtonHeld = 0f;
         }
 
         switch (_state)

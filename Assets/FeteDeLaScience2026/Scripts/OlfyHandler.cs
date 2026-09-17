@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 public partial class OlfyHandler : MonoBehaviour, IScentDiffuser
@@ -16,6 +17,10 @@ public partial class OlfyHandler : MonoBehaviour, IScentDiffuser
 
     [Header("Config")]
     [SerializeField] int _nbSlots = 3;
+
+    [Header("Callbacks")]
+    public UnityEvent OnOlfyReady;
+    bool _readyNotified = false;
 
     [Header("Debug")]
 
@@ -55,6 +60,12 @@ public partial class OlfyHandler : MonoBehaviour, IScentDiffuser
 
     void Update()
     {
+        if(!_readyNotified && _olfyManager.isReady)
+        {
+            _readyNotified = true;
+            OnOlfyReady?.Invoke();
+        }
+
         UpdateSlotColors();
     }
 
