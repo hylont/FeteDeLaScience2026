@@ -1,8 +1,10 @@
 using EditorAttributes;
 using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 // Drives the full trial from calibration to the final fade to black:
 //   1) Left controller X calibrates the rig once both hands are seen resting on the table.
@@ -20,7 +22,14 @@ public class ExperimentFlow : MonoBehaviour
         Ended
     }
 
+    private enum EDiffusionTiming
+    {
+        OnMouthProximity,
+        OnTrialStart,
+        OnCakeHeld
+    }
 
+    [SerializeField] bool _allowTesting = false;
     [SerializeField]
     ScentDiffusionParameters _testScent = new(1, .5f, 3000);
 
@@ -51,6 +60,7 @@ public class ExperimentFlow : MonoBehaviour
     [SerializeField] private MonoBehaviour _scentDiffuserBehaviour;
     [SerializeField] [Range(0f, 1f)] private float _scentStrength = 0.7f;
     [SerializeField] [Range(1000, 10000)] private int _scentDuration = 3000;
+    [SerializeField] private EDiffusionTiming _diffuseAtTiming = EDiffusionTiming.OnMouthProximity;
 
     [Header("Flavors")]
     [SerializeField]
@@ -65,6 +75,9 @@ public class ExperimentFlow : MonoBehaviour
     [SerializeField] private ScreenFader _screenFader;
 
     [Header("Debug")]
+    [SerializeField] float _resetButtonHoldDuration = 3f;
+    float _resetButtonHeld = 0f;
+
     [Tooltip("Plain-language readout of the current state and expected interaction, for the experimenter.")]
     [SerializeField] private TextMeshProUGUI _debugText;
 
@@ -76,6 +89,9 @@ public class ExperimentFlow : MonoBehaviour
     private int _trialIndex;
     private TrialData _currentTrial;
     private bool _scentDiffusedThisTrial;
+    private readonly List<EFlavor> _usedColorFlavors = new();
+    private readonly List<EFlavor> _usedScentFlavors = new();
+
 
     private void Awake()
     {
@@ -99,7 +115,20 @@ public class ExperimentFlow : MonoBehaviour
             || OVRInput.GetDown(OVRInput.RawButton.A, OVRInput.Controller.RTouch)
             || Keyboard.current.enterKey.wasPressedThisFrame;
 
-        if(OVRInput.GetDown(OVRInput.RawButton.B, OVRInput.Controller.RTouch)) DiffuseTest();
+        if(_allowTesting && 
+            OVRInput.GetDown(OVRInput.RawButton.B, OVRInput.Controller.RTouch)) DiffuseTest();
+
+        if(OVRInput.GetDown(OVRInput.RawButton.RHandTrigger, OVRInput.Controller.RTouch)
+            || OVRInput.GetDown(OVRInput.RawButton.LHandTrigger, OVRInput.Controller.LTouch))
+        {
+            _resetButtonHeld += Time.deltaTime;
+
+            if(_resetButtonHeld >= _resetButtonHoldDuration)
+            {
+                LLogger.L("Resetting experiment.");
+                SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+            }
+        }
 
         switch (_state)
         {
@@ -109,7 +138,15 @@ public class ExperimentFlow : MonoBehaviour
 
             case EState.TrialInProgress:
                 UpdateTrial();
-                if (_scentDiffusedThisTrial && confirmPressed) AdvanceTrial();
+                if (_scentDiffusedThisTrial)
+                {
+                    if (CakeIsNearMouth())
+                    {
+                        _cakePiece.StopFollowing();
+                        _cakePiece.gameObject.SetActive(false);
+                    }
+                    if(confirmPressed) AdvanceTrial();
+                }
                 break;
         }
 
@@ -120,12 +157,12 @@ public class ExperimentFlow : MonoBehaviour
     {
         if(_disableCalibration)
         {
-            BeginTrial(TrialData.GenerateCoherent());
+            BeginTrial(TrialData.GenerateCoherent(_usedColorFlavors, _usedScentFlavors));
         }
         else
         {
             _calibrationRig.TryCalibrate();
-            StartCoroutine(StartTrial_Coroutine(TrialData.GenerateCoherent()));
+            StartCoroutine(StartTrial_Coroutine(TrialData.GenerateCoherent(_usedColorFlavors, _usedScentFlavors)));
         }
     }
 
@@ -140,6 +177,8 @@ public class ExperimentFlow : MonoBehaviour
         _currentTrial = trial;
         _trialIndex++;
         _scentDiffusedThisTrial = false;
+        _usedColorFlavors.Add(trial.ColorFlavor);
+        _usedScentFlavors.Add(trial.ScentFlavor);
 
         if (_chefAnimator != null) _chefAnimator.SetTrigger(PlacingTrigger);
 
@@ -162,20 +201,35 @@ public class ExperimentFlow : MonoBehaviour
 
     private void UpdateTrial()
     {
-        if (_scentDiffusedThisTrial || !_cakePiece.IsBeingHeld || _mouthReference == null) return;
-
-        float dist = Vector3.Distance(_cakePiece.transform.position, _mouthReference.position);
-        if (dist <= _mouthProximityThreshold)
+        if (_scentDiffusedThisTrial || _mouthReference == null) return;
+        
+        switch (_diffuseAtTiming)
         {
-            DiffuseScent();
+            case EDiffusionTiming.OnMouthProximity:
+                if (!_cakePiece.IsBeingHeld) return;
+                if (CakeIsNearMouth())
+                {
+                    DiffuseScent();
+                }
+                break;
+            case EDiffusionTiming.OnTrialStart:
+                DiffuseScent();
+                break;
+            case EDiffusionTiming.OnCakeHeld:
+                if (!_cakePiece.IsBeingHeld) return;
+                DiffuseScent();
+                break;
         }
+    }
+
+    private bool CakeIsNearMouth()
+    {
+        return Vector3.Distance(_cakePiece.transform.position, _mouthReference.position) <= _mouthProximityThreshold;
     }
 
     private void DiffuseScent()
     {
         _scentDiffusedThisTrial = true;
-        _cakePiece.StopFollowing();
-        _cakePiece.gameObject.SetActive(false);
 
         FlavorDefinition scentDef = GetDefinition(_currentTrial.ScentFlavor);
         var parameters = new ScentDiffusionParameters(scentDef.ScentSlot, _scentStrength, _scentDuration);
@@ -194,7 +248,7 @@ public class ExperimentFlow : MonoBehaviour
         }
         else
         {
-            BeginTrial(TrialData.GenerateIncoherent());
+            BeginTrial(TrialData.GenerateIncoherent(_usedColorFlavors, _usedScentFlavors));
         }
     }
 
