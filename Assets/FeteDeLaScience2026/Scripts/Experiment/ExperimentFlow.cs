@@ -95,7 +95,13 @@ public class ExperimentFlow : MonoBehaviour
 
     private void Awake()
     {
-        _scentDiffuser = _scentDiffuserBehaviour as IScentDiffuser;
+        // OlfyHandler persists across scene reloads (DontDestroyOnLoad), but this
+        // serialized reference gets re-linked to a fresh throwaway copy of the Olfy
+        // prefab on every reload, so prefer the persisted singleton when it exists.
+        _scentDiffuser = OlfyHandler.Instance != null
+            ? OlfyHandler.Instance
+            : _scentDiffuserBehaviour as IScentDiffuser;
+
         if (_scentDiffuser == null)
         {
             LLogger.E("Scent diffuser reference does not implement IScentDiffuser.");

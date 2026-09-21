@@ -80305,7 +80305,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
-  m_Resource: {fileID: 8300000, guid: 935368d1a6e750a47a5fee86238ebdb5, type: 3}
+  m_Resource: {fileID: 8300000, guid: cad675aa2f9fea24785ccdbf64f9108f, type: 3}
   m_PlayOnAwake: 1
   m_Volume: 0.2
   m_Pitch: 1
@@ -101061,7 +101061,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Musique : Chill Lofi par Marek Zielinski de Pixabay'
+  m_text: 'Musique : Sound Effect by Alexander Jauk from Pixabay'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 0ab4b85d72cb0b342a03a341bb9fdc34, type: 2}
   m_sharedMaterial: {fileID: -7543726492797719356, guid: 0ab4b85d72cb0b342a03a341bb9fdc34, type: 2}
