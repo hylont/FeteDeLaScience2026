@@ -11904,6 +11904,10 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.x
       value: -0.09
       objectReference: {fileID: 0}
+    - target: {fileID: 5552895500475343242, guid: 598c3cb9bbfd99647a153d3e8a0e4401, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6148275808846191023, guid: 598c3cb9bbfd99647a153d3e8a0e4401, type: 3}
       propertyPath: _debugText
       value: 
@@ -111024,7 +111028,7 @@ Canvas:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1834072710}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_RenderMode: 2
   m_Camera: {fileID: 0}
