@@ -1,24 +1,28 @@
 using EditorAttributes;
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
-// Drives the full trial from calibration to the final fade to black:
-//   1) Left controller X calibrates the rig once both hands are seen resting on the table.
-//   2) A coherent piece is placed, then an incoherent one, in that fixed order.
-//   3) The cake follows the pinching hand while the left grip is held (see CakePiece).
-//   4) Scent is diffused once the (held) piece gets close to the mouth.
-//   5) The experimenter asks the two questions out loud and notes them on paper.
-//   6) Left controller X (once the scent has been diffused) starts the next trial, or ends it.
+// Drives one session (= one scene load = one participant) from calibration to the final fade to black:
+//   1) Left controller X / right controller A calibrates the rig once both hands rest on the table.
+//   2) COH trial, then INC trial. Each time the cake appears on the plate, follows the pinching hand
+//      while the grip is held (see CakePiece), and the scent is diffused once it gets close to the mouth.
+//   3) A few seconds later the participant answers by grabbing answer spheres (see GrabbableAnswer):
+//      COH: taste, perceived odor, then intensity (depending on the odor answer). INC: taste only.
+//   4) Every answer is saved to persistentDataPath/Results as JSON, with a random participant ID.
 public class ExperimentFlow : MonoBehaviour
 {
     private enum EState
     {
         WaitingCalibration,
-        TrialInProgress,
+        Calibrating,
+        Tasting,
+        Answering,
         Ended
     }
 
@@ -28,6 +32,19 @@ public class ExperimentFlow : MonoBehaviour
         OnTrialStart,
         OnCakeHeld
     }
+
+    [Serializable]
+    public class Question
+    {
+        public string Text;
+        [Tooltip("Parent of this question's GrabbableAnswer spheres, only shown while the question is asked.")]
+        public GameObject Answers;
+    }
+
+    // Saved results. Strings rather than enums, since JsonUtility writes enums as numbers.
+    [Serializable] private class AnswerRecord { public string Question, Answer, Time; }
+    [Serializable] private class TrialRecord { public string Condition, ColorFlavor, ScentFlavor; public bool ScentSent; public List<AnswerRecord> Answers = new(); }
+    [Serializable] private class SessionRecord { public string ParticipantId, StartTime; public int ScentIntensity; public List<TrialRecord> Trials = new(); }
 
     [SerializeField] bool _allowTesting = false;
     [SerializeField]
@@ -41,9 +58,14 @@ public class ExperimentFlow : MonoBehaviour
 
     private const int TotalTrials = 2;
 
+    // Hierarchy index of "Il y avait une odeur" under _smellQuestion.Answers: this answer skips the
+    // intensity question, the two others ("pas d'odeur", "pas sûr") lead to it.
+    private const int OdorPresentAnswerIndex = 2;
+
     [Header("Calibration")]
     [SerializeField] bool _disableCalibration = false;
     [SerializeField] private CalibrationRig _calibrationRig;
+    [SerializeField] AudioSource _calibrationSuccessfulClip;
 
     [Header("Chef")]
     [SerializeField] private Animator _chefAnimator;
@@ -58,7 +80,6 @@ public class ExperimentFlow : MonoBehaviour
     [Header("Scent")]
     [Tooltip("Component implementing IScentDiffuser, e.g. the Olfy prefab's OlfyHandler.")]
     [SerializeField] private MonoBehaviour _scentDiffuserBehaviour;
-    [SerializeField] [Range(0f, 1f)] private float _scentStrength = 0.7f;
     [SerializeField] [Range(1000, 10000)] private int _scentDuration = 3000;
     [SerializeField] private EDiffusionTiming _diffuseAtTiming = EDiffusionTiming.OnMouthProximity;
 
@@ -70,6 +91,15 @@ public class ExperimentFlow : MonoBehaviour
         new FlavorDefinition(EFlavor.Citron, Color.yellow, 2),
         new FlavorDefinition(EFlavor.Fraise, Color.red, 3)
     };
+
+    [Header("Questions")]
+    [Tooltip("World-space text showing the current question to the participant.")]
+    [SerializeField] private TMP_Text _questionText;
+    [Tooltip("Seconds between the cake reaching the mouth and the first question.")]
+    [SerializeField] private float _answersDelay = 3f;
+    [SerializeField] private Question _tasteQuestion = new() { Text = "De quel goût était le gâteau ?" };
+    [SerializeField] private Question _smellQuestion = new() { Text = "Avez-vous senti une odeur ?" };
+    [SerializeField] private Question _intensityQuestion = new() { Text = "Est-ce que l'odeur était trop forte ?" };
 
     [Header("End")]
     [SerializeField] private ScreenFader _screenFader;
@@ -86,12 +116,17 @@ public class ExperimentFlow : MonoBehaviour
     private IScentDiffuser _scentDiffuser;
 
     [ShowInInspector] private EState _state = EState.WaitingCalibration;
-    private int _trialIndex;
+    private SessionRecord _session;
+    private string _resultsPath;
     private TrialData _currentTrial;
     private bool _scentDiffusedThisTrial;
+    private Question _currentQuestion;
+    private GrabbableAnswer _grabbedAnswer;
     private readonly List<EFlavor> _usedColorFlavors = new();
     private readonly List<EFlavor> _usedScentFlavors = new();
 
+    private Question[] Questions => new[] { _tasteQuestion, _smellQuestion, _intensityQuestion };
+    private TrialRecord CurrentRecord => _session.Trials[^1];
 
     private void Awake()
     {
@@ -106,11 +141,33 @@ public class ExperimentFlow : MonoBehaviour
         {
             LLogger.E("Scent diffuser reference does not implement IScentDiffuser.");
         }
+
+        // Each scene load is a new session: new participant ID and a scent intensity (10..100%) for the whole experience.
+        DateTime now = DateTime.Now;
+        _session = new SessionRecord
+        {
+            ParticipantId = Guid.NewGuid().ToString("N").Substring(0, 8),
+            StartTime = now.ToString("yyyy-MM-dd HH:mm:ss"),
+            ScentIntensity = UnityEngine.Random.Range(1, 11) * 10
+        };
+        _resultsPath = Path.Combine(Application.persistentDataPath, "Results", $"{now:yyyyMMdd_HHmmss}_{_session.ParticipantId}.json");
+
+        LLogger.L($"Session {_session.ParticipantId} — scent intensity {_session.ScentIntensity}%");
     }
 
     private void Start()
     {
         _cakePiece.gameObject.SetActive(false);
+
+        foreach (Question question in Questions)
+        {
+            foreach (GrabbableAnswer answer in question.Answers.GetComponentsInChildren<GrabbableAnswer>(true))
+            {
+                answer.Grabbed += OnAnswerGrabbed;
+            }
+        }
+        ShowQuestion(null);
+
         ValidateFlavorDefinitions();
         UpdateDebugText();
     }
@@ -121,7 +178,7 @@ public class ExperimentFlow : MonoBehaviour
             || OVRInput.GetDown(OVRInput.RawButton.A, OVRInput.Controller.RTouch)
             || Keyboard.current.enterKey.wasPressedThisFrame;
 
-        if(_allowTesting && 
+        if(_allowTesting &&
             OVRInput.GetDown(OVRInput.RawButton.B, OVRInput.Controller.RTouch)) DiffuseTest();
 
         if(OVRInput.Get(OVRInput.RawButton.RIndexTrigger, OVRInput.Controller.RTouch)
@@ -140,97 +197,117 @@ public class ExperimentFlow : MonoBehaviour
             _resetButtonHeld = 0f;
         }
 
-        switch (_state)
+        if (_state == EState.WaitingCalibration && confirmPressed)
         {
-            case EState.WaitingCalibration:
-                if (confirmPressed) TryCalibrate();
-                break;
-
-            case EState.TrialInProgress:
-                UpdateTrial();
-                if (_scentDiffusedThisTrial)
-                {
-                    if (CakeIsNearMouth())
-                    {
-                        _cakePiece.StopFollowing();
-                        _cakePiece.gameObject.SetActive(false);
-                    }
-                    if(confirmPressed) AdvanceTrial();
-                }
-                break;
+            StartCoroutine(RunExperiment());
         }
 
         UpdateDebugText();
     }
 
-    private void TryCalibrate()
+    private IEnumerator RunExperiment()
     {
-        if(_disableCalibration)
-        {
-            BeginTrial(TrialData.GenerateCoherent(_usedColorFlavors, _usedScentFlavors));
-        }
-        else
+        _state = EState.Calibrating;
+        if (!_disableCalibration)
         {
             _calibrationRig.TryCalibrate();
-            StartCoroutine(StartTrial_Coroutine(TrialData.GenerateCoherent(_usedColorFlavors, _usedScentFlavors)));
+            if(_calibrationSuccessfulClip != null) _calibrationSuccessfulClip.Play();
+            if (_screenFader != null) yield return new WaitForSeconds(_screenFader.FadeDuration);
         }
+
+        yield return RunTasting(TrialData.GenerateCoherent(_usedColorFlavors, _usedScentFlavors));
+        yield return Ask(_tasteQuestion);
+        yield return Ask(_smellQuestion);
+        if (_grabbedAnswer.transform.GetSiblingIndex() == OdorPresentAnswerIndex)
+        {
+            yield return Ask(_intensityQuestion);
+        }
+
+        yield return RunTasting(TrialData.GenerateIncoherent(_usedColorFlavors, _usedScentFlavors));
+        yield return Ask(_tasteQuestion);
+
+        EndExperience();
     }
 
-    IEnumerator StartTrial_Coroutine(TrialData trial)
+    // Serves the cake, diffuses the scent and waits until the piece has been "eaten".
+    private IEnumerator RunTasting(TrialData trial)
     {
-        if(_screenFader != null) yield return new WaitForSeconds(_screenFader.FadeDuration);
-        BeginTrial(trial);
-    }
-
-    private void BeginTrial(TrialData trial)
-    {
+        _state = EState.Tasting;
         _currentTrial = trial;
-        _trialIndex++;
         _scentDiffusedThisTrial = false;
         _usedColorFlavors.Add(trial.ColorFlavor);
         _usedScentFlavors.Add(trial.ScentFlavor);
+        _session.Trials.Add(new TrialRecord
+        {
+            Condition = ConditionLabel(trial),
+            ColorFlavor = trial.ColorFlavor.ToString(),
+            ScentFlavor = trial.ScentFlavor.ToString()
+        });
 
         if (_chefAnimator != null) _chefAnimator.SetTrigger(PlacingTrigger);
-
-        FlavorDefinition colorDef = GetDefinition(trial.ColorFlavor);
         _cakePiece.ResetToServingPoint(_cakeServingPoint);
-        _cakePiece.SetColor(colorDef.Color);
+        _cakePiece.SetColor(GetDefinition(trial.ColorFlavor).Color);
 
-        StartCoroutine(EnableCakePiece_Coroutine());
+        LLogger.L($"Trial {_session.Trials.Count}/{TotalTrials} start — condition={trial.Condition}, color={trial.ColorFlavor}, scent={trial.ScentFlavor}");
 
-        _state = EState.TrialInProgress;
+        if(_questionText) _questionText.text = "Vous pouvez attraper et manger le gâteau";
 
-        LLogger.L($"Trial {_trialIndex}/{TotalTrials} start — condition={trial.Condition}, color={trial.ColorFlavor}, scent={trial.ScentFlavor}");
-    }
-
-    IEnumerator EnableCakePiece_Coroutine()
-    {
         yield return new WaitForSeconds(_cakePlacementDelay);
         _cakePiece.gameObject.SetActive(true);
+
+        yield return new WaitUntil(ShouldDiffuse);
+        DiffuseScent();
+
+        yield return new WaitUntil(CakeIsNearMouth);
+        _cakePiece.StopFollowing();
+        _cakePiece.gameObject.SetActive(false);
+
+        yield return new WaitForSeconds(_answersDelay);
     }
 
-    private void UpdateTrial()
+    // Shows a question and waits for the participant to grab one of its answers, then saves it.
+    private IEnumerator Ask(Question question)
     {
-        if (_scentDiffusedThisTrial || _mouthReference == null) return;
-        
-        switch (_diffuseAtTiming)
+        _state = EState.Answering;
+        _grabbedAnswer = null;
+        ShowQuestion(question);
+
+        yield return new WaitUntil(() => _grabbedAnswer != null);
+
+        ShowQuestion(null);
+        CurrentRecord.Answers.Add(new AnswerRecord
         {
-            case EDiffusionTiming.OnMouthProximity:
-                if (!_cakePiece.IsBeingHeld) return;
-                if (CakeIsNearMouth())
-                {
-                    DiffuseScent();
-                }
-                break;
-            case EDiffusionTiming.OnTrialStart:
-                DiffuseScent();
-                break;
-            case EDiffusionTiming.OnCakeHeld:
-                if (!_cakePiece.IsBeingHeld) return;
-                DiffuseScent();
-                break;
-        }
+            Question = question.Text,
+            Answer = _grabbedAnswer.Label,
+            Time = DateTime.Now.ToString("HH:mm:ss")
+        });
+        SaveResults();
+
+        LLogger.L($"Answer — {question.Text} {_grabbedAnswer.Label}");
     }
+
+    private void OnAnswerGrabbed(GrabbableAnswer answer)
+    {
+        // Only the first grab counts until the next question is asked.
+        if (_grabbedAnswer == null) _grabbedAnswer = answer;
+    }
+
+    private void ShowQuestion(Question question)
+    {
+        _currentQuestion = question;
+        foreach (Question q in Questions) q.Answers.SetActive(q == question);
+
+        if (_questionText == null) return;
+        _questionText.text = question?.Text ?? "";
+        _questionText.gameObject.SetActive(question != null);
+    }
+
+    private bool ShouldDiffuse() => _diffuseAtTiming switch
+    {
+        EDiffusionTiming.OnTrialStart => true,
+        EDiffusionTiming.OnCakeHeld => _cakePiece.IsBeingHeld,
+        _ => _cakePiece.IsBeingHeld && CakeIsNearMouth()
+    };
 
     private bool CakeIsNearMouth()
     {
@@ -242,32 +319,34 @@ public class ExperimentFlow : MonoBehaviour
         _scentDiffusedThisTrial = true;
 
         FlavorDefinition scentDef = GetDefinition(_currentTrial.ScentFlavor);
-        var parameters = new ScentDiffusionParameters(scentDef.ScentSlot, _scentStrength, _scentDuration);
+        var parameters = new ScentDiffusionParameters(scentDef.ScentSlot, _session.ScentIntensity / 100f, _scentDuration);
         bool sent = _scentDiffuser != null && _scentDiffuser.RequestDiffusion(parameters);
+        CurrentRecord.ScentSent = sent;
 
-        LLogger.L($"Trial {_trialIndex} scent diffused — flavor={_currentTrial.ScentFlavor}, slot={scentDef.ScentSlot}, sent={sent}");
-    }
-
-    private void AdvanceTrial()
-    {
-        LLogger.L($"Trial {_trialIndex} ended by experimenter.");
-
-        if (_trialIndex >= TotalTrials)
-        {
-            EndExperience();
-        }
-        else
-        {
-            BeginTrial(TrialData.GenerateIncoherent(_usedColorFlavors, _usedScentFlavors));
-        }
+        LLogger.L($"Trial {_session.Trials.Count} scent diffused — flavor={_currentTrial.ScentFlavor}, slot={scentDef.ScentSlot}, intensity={_session.ScentIntensity}%, sent={sent}");
     }
 
     private void EndExperience()
     {
         _state = EState.Ended;
-        LLogger.L("Experience ended.");
+        LLogger.L($"Experience ended. Results saved to {_resultsPath}");
         if (_screenFader != null) _screenFader.FadeToBlack();
     }
+
+    private void SaveResults()
+    {
+        try
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(_resultsPath));
+            File.WriteAllText(_resultsPath, JsonUtility.ToJson(_session, true));
+        }
+        catch (Exception e)
+        {
+            LLogger.E($"Could not save results to {_resultsPath}: {e.Message}");
+        }
+    }
+
+    private static string ConditionLabel(TrialData trial) => trial.Condition == ETrialCondition.Coherent ? "COH" : "INC";
 
     private FlavorDefinition GetDefinition(EFlavor flavor)
     {
@@ -282,7 +361,7 @@ public class ExperimentFlow : MonoBehaviour
 
     private void ValidateFlavorDefinitions()
     {
-        foreach (EFlavor flavor in System.Enum.GetValues(typeof(EFlavor)))
+        foreach (EFlavor flavor in Enum.GetValues(typeof(EFlavor)))
         {
             bool found = false;
             foreach (FlavorDefinition def in _flavors)
@@ -309,42 +388,48 @@ public class ExperimentFlow : MonoBehaviour
                      + "Le participant pose ses deux mains à plat sur la table.\n"
                      + "Appuyez sur X (manette gauche) pour calibrer la hauteur et l'orientation.";
 
-            case EState.TrialInProgress:
-                return BuildTrialMessage();
+            case EState.Calibrating:
+                return "CALIBRATION EN COURS...";
+
+            case EState.Tasting:
+                return BuildTrialHeader() + BuildTastingMessage();
+
+            case EState.Answering:
+                return BuildTrialHeader()
+                     + $"Question : « {_currentQuestion?.Text} »\n"
+                     + "Le participant attrape une sphère pour répondre.";
 
             case EState.Ended:
-                return "EXPÉRIENCE TERMINÉE\nÉcran noir.";
+                return "EXPÉRIENCE TERMINÉE\nÉcran noir.\n"
+                     + $"Résultats : {_resultsPath}";
 
             default:
                 return "";
         }
     }
 
-    private string BuildTrialMessage()
+    private string BuildTrialHeader()
     {
-        string condition = _currentTrial.Condition == ETrialCondition.Coherent ? "COHÉRENT" : "INCOHÉRENT";
-        string header = $"ESSAI {_trialIndex}/{TotalTrials} — {condition}\n"
-                       + $"Couleur montrée : {_currentTrial.ColorFlavor}   |   Odeur réelle : {_currentTrial.ScentFlavor}\n\n";
+        return $"ESSAI {_session.Trials.Count}/{TotalTrials} — {ConditionLabel(_currentTrial)}   |   Participant {_session.ParticipantId}   |   Intensité {_session.ScentIntensity}%\n"
+             + $"Couleur montrée : {_currentTrial.ColorFlavor}   |   Odeur réelle : {_currentTrial.ScentFlavor}\n\n";
+    }
 
+    private string BuildTastingMessage()
+    {
         if (_scentDiffusedThisTrial)
         {
-            return header
-                 + "Odeur diffusée.\n"
-                 + "Demandez à l'oral : « Quel gâteau avez-vous mangé ? »\n"
-                 + "puis : « À quel point l'odeur était forte, de 0 à 10 ? »\n"
-                 + "Notez les 2 réponses sur la feuille, puis appuyez sur X pour continuer.";
+            return "Odeur diffusée.\n"
+                 + "Les questions apparaissent quelques secondes après que le morceau a atteint la bouche.";
         }
 
         if (_cakePiece.IsBeingHeld)
         {
-            return header
-                 + "Morceau virtuel attaché à la main.\n"
+            return "Morceau virtuel attaché à la main.\n"
                  + "Approchez-le de la bouche du participant pour déclencher l'odeur.";
         }
 
-        return header
-             + "Le chef dépose le morceau.\n"
+        return "Le chef dépose le morceau.\n"
              + "Dès que le participant attrape le vrai morceau, maintenez la gâchette\n"
-             + "latérale gauche (grip) pour attacher le morceau virtuel à sa main.";
+             + "latérale (grip) pour attacher le morceau virtuel à sa main.";
     }
 }
